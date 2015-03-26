@@ -25,6 +25,8 @@ if ( ! function_exists( 'add_filter' ) ) {
     exit();
 }
 
+add_action( 'init', 'GHL_initialize_external_classes' );
+
 add_filter( "extra_plugin_headers", "GHL_extra_headers" );
 add_filter( "plugin_action_links", "GHL_plugin_link", 10, 4 );
 add_filter( "network_admin_plugin_action_links", "GHL_plugin_link", 10, 4 );
@@ -47,6 +49,7 @@ function GHL_plugin_link( $actions, $plugin_file, $plugin_data, $context ) {
     if ( 'search' === $context )
         return $actions;
 
+    $submodules = GHL_gitmodules_get_all();
     $link_template = '<a href="%s" title="%s" target="_blank"><img src="%s" style="vertical-align:-3px" height="16" width="16" alt="%s" />%s</a>';
 
     $on_wporg = false;
@@ -106,4 +109,35 @@ function GHL_plugin_link( $actions, $plugin_file, $plugin_data, $context ) {
     }
 
     return $actions;
+}
+
+/**
+* Include and setup custom libraries
+*
+*/
+function GHL_initialize_external_classes () {
+
+    /**
+    * PHP .gitmodules parser
+    *
+    * A (very small) API for parsing .gitmodules files.
+    *
+    * @since    2015.03.26
+    * @link     https://github.com/bornemix/gitmodules-parser
+    */
+    require_once WP_PLUGIN_DIR . '/' . dirname( plugin_basename( __FILE__ ) ) . '/libs/gitmodules-parser/gitmodules-parser.php';
+
+}
+
+function GHL_gitmodules_get_all( ) {
+/*
+    if ( false === ( $submodules = get_transient( 'GHL_all_gitmodules' ) ) ) :
+
+        $submodules = gitmodules_get_all( '../..' );
+        set_transient( 'GHL_all_gitmodules', $submodules, 365 * 24 * HOUR_IN_SECONDS );
+    endif;
+*/
+        $submodules = gitmodules_get_all( );
+
+#    fb($submodules);
 }

@@ -1,0 +1,3 @@
+[submodule "libs/gitmodules-parser"]
+	path = libs/gitmodules-parser
+	url = https://github.com/bornemix/gitmodules-parser.git
