@@ -44,7 +44,7 @@ function GHL_extra_headers( $extra_headers ) {
 }
 
 function GHL_plugin_link( $actions, $plugin_file, $plugin_data, $context ) {
-
+fb( array(    $actions, $plugin_file, $plugin_data, $context));
     // no GitHub data on search
     if ( 'search' === $context )
         return $actions;
@@ -59,8 +59,13 @@ function GHL_plugin_link( $actions, $plugin_file, $plugin_data, $context ) {
         || isset( $plugin_state->no_update[$plugin_file] )
     )
         $on_wporg = true;
+    fb( array( PLUGINDIR . '/' . $plugin_data['slug'], $plugin_data ) );
 
-    if ( ! empty( $plugin_data["GitHub Plugin URI"] ) ) {
+    if ( 
+        ! empty( $plugin_data["GitHub Plugin URI"] ) 
+            OR
+        array_key_exists( PLUGINDIR . '/' . $plugin_data['slug'], $submodules)
+        ) {
         $icon = "icon/GitHub-Mark-32px.png";
         $branch = '';
 
@@ -130,14 +135,23 @@ function GHL_initialize_external_classes () {
 }
 
 function GHL_gitmodules_get_all( ) {
-/*
+/**/      
     if ( false === ( $submodules = get_transient( 'GHL_all_gitmodules' ) ) ) :
 
-        $submodules = gitmodules_get_all( '../..' );
-        set_transient( 'GHL_all_gitmodules', $submodules, 365 * 24 * HOUR_IN_SECONDS );
-    endif;
-*/
-        $submodules = gitmodules_get_all( );
 
-#    fb($submodules);
+#        set_transient( 'GHL_all_gitmodules', $submodules, 1 * HOUR_IN_SECONDS );
+#        set_transient( 'GHL_all_gitmodules', $submodules, 365 * 24 * HOUR_IN_SECONDS );
+    endif;
+
+        $protocol = ( is_ssl() ? 'https://' : 'http://' );
+        $dir = trim( $_SERVER['HTTP_HOST'] );
+        $submodules = gitmodules_get_all( $protocol.$dir );
+
+if ( ! empty( $submodules ) ) {
+    $names   = wp_list_pluck( $submodules, 'name' );
+    $gitmodules = array_combine( $names, $submodules );
+}
+
+    fb( $gitmodules );
+    return $gitmodules;
 }
